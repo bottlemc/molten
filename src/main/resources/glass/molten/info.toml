@@ -1,0 +1,17 @@
+id = "molten"
+version = "0.1.0"
+namespace = "com.github.bottlemc.molten"
+
+implementations = [
+    "1.8.9"
+]
+
+[listeners]
+initialize = [
+    "MoltenInitializeListener"
+]
+
+[environment]
+    [environment.has]
+    client = "1.8.9"
+    flame = "0.1.0"
