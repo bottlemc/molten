@@ -3,7 +3,6 @@ package com.github.bottlemc.molten;
 import com.github.glassmc.loader.GlassLoader;
 import com.github.glassmc.sculpt.Sculpt;
 import com.github.glassmc.sculpt.framework.Renderer;
-import com.github.glassmc.sculpt.framework.backend.IBackend;
 import com.github.glassmc.sculpt.framework.element.Container;
 import com.github.glassmc.sculpt.framework.layout.RegionLayout;
 
