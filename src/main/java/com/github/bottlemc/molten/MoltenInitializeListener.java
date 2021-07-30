@@ -9,6 +9,7 @@ public class MoltenInitializeListener implements Listener {
     public void run() {
         GlassLoader.getInstance().registerAPI(new Molten());
         GlassLoader.getInstance().getAPI(Molten.class).open(new TestWindow());
+        GlassLoader.getInstance().getAPI(Molten.class).open(new TestWindow());
     }
 
 }

@@ -17,9 +17,16 @@ public class Molten {
 
     private List<Window> windows = new ArrayList<>();
 
+    private Window interactedWindow;
+
     public void open(Window window) {
         this.windows.add(window);
         container.getLayout(RegionLayout.class).add(window.getContainer(), RegionLayout.Region.CENTER);
+    }
+
+    public void close(Window window) {
+        this.windows.remove(window);
+        container.remove(window.getContainer());
     }
 
     public void render() {
@@ -29,4 +36,17 @@ public class Molten {
         this.renderer.render(container);
     }
 
+    public void setInteractedWindow(Window interactedWindow) {
+        this.interactedWindow = interactedWindow;
+        if (interactedWindow != null) {
+            this.windows.remove(interactedWindow);
+            this.windows.add(interactedWindow);
+            this.container.remove(interactedWindow.getContainer());
+            this.container.add(interactedWindow.getContainer());
+        }
+    }
+
+    public Window getInteractedWindow() {
+        return interactedWindow;
+    }
 }
