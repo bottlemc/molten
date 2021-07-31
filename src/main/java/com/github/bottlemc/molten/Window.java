@@ -4,6 +4,7 @@ import com.github.bottlemc.flame.Flame;
 import com.github.bottlemc.flame.FlameConfiguration;
 import com.github.glassmc.loader.GlassLoader;
 import com.github.glassmc.sculpt.Sculpt;
+import com.github.glassmc.sculpt.framework.Pair;
 import com.github.glassmc.sculpt.framework.Vector2D;
 import com.github.glassmc.sculpt.framework.backend.IBackend;
 import com.github.glassmc.sculpt.framework.constraint.Absolute;
@@ -52,11 +53,12 @@ public class Window {
             .getLayout(RegionLayout.class)
             .add(new Container()
                 .backgroundColor(new Absolute(configuration.background))
-                .cornerRadius(new Absolute(3.5))
+                .cornerRadius(new Absolute(2.5))
                 .getLayout(RegionLayout.class)
                 .add(new Container()
                     .height(new Absolute(10))
-                    .cornerRadius(new Absolute(3.5))
+                    .cornerRadius(new Pair<>(Element.Direction.LEFT, Element.Direction.TOP), new Absolute(2.5))
+                    .cornerRadius(new Pair<>(Element.Direction.TOP, Element.Direction.RIGHT), new Absolute(2.5))
                     .backgroundColor(new Absolute(configuration.elementBackground))
                     .onClick(container1 -> {
                         setInitials();
@@ -207,7 +209,6 @@ public class Window {
                     if (maximized && (deltaRelativeMouseX > 0 || deltaRelativeMouseY > 0)) {
                         this.width = cachedWidth;
                         this.height = cachedHeight;
-                        System.out.println( - width * (mouseLocation.getFirst() / backend.getDimension().getFirst()));
                         this.initialX = (mouseLocation.getFirst() / backend.getDimension().getFirst() - width * (mouseLocation.getFirst() / backend.getDimension().getFirst())) - width / 2;
                         this.x = initialX;
                         this.initialY = -0.5 + height / 2;
