@@ -12,6 +12,7 @@ import com.github.glassmc.sculpt.framework.layout.ListLayout;
 import com.github.glassmc.sculpt.framework.layout.RegionLayout;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class Molten {
 
@@ -41,25 +42,48 @@ public class Molten {
     private Window interactedWindow;
     private final List<InteractType> currentInteracts = new ArrayList<>();
 
-    public void open(Window window) {
-        container.getLayout(RegionLayout.class).add(window.getContainer(), RegionLayout.Region.CENTER);
+    private final List<Container> pinnedItems = new ArrayList<>();
 
-        Container container = new Container()
-            .width(new Relative(0.6))
+    private Container getItem(String title, String icon) {
+        return new Container()
+            .width(new Relative(0.7))
             .height(new Copy())
-            .padding(new Relative(0.2))
+            .padding(new Relative(0.15))
             .getLayout(RegionLayout.class)
             .add(new Container()
-                .width(new Relative(0.8))
-                .height(new Relative(0.8))
+                .width(new Relative(0.7))
+                .height(new Relative(0.7))
                 .apply(container1 -> {
-                    if(window.getIcon() != null) {
-                        container1.backgroundImage(window.getIcon());
-                    } else {
-                        container1.backgroundColor(new Absolute(flame.getConfiguration().foregroundPrimary));
+                    container1.backgroundColor(new Absolute(flame.getConfiguration().foregroundPrimary));
+                    if(icon != null) {
+                        container1.backgroundImage(icon);
                     }
                 }),
                 RegionLayout.Region.CENTER)
+            .getContainer();
+    }
+
+    public void addPinnedItem(String name, String icon, Supplier<Window> generator) {
+        dockList.add(this.getItem(name, icon)
+            .onClick(container1 -> {
+                this.open(generator.get());
+            }));
+    }
+
+    public void open(Window window) {
+        container.getLayout(RegionLayout.class).add(window.getContainer(), RegionLayout.Region.CENTER);
+
+        Container container = this.getItem("", window.getIcon())
+            .adjustElements(false)
+            .onClick(container1 -> {
+                this.setFocused(window);
+            })
+            .getLayout(RegionLayout.class)
+            .add(new Container()
+                .backgroundColor(new Absolute(flame.getConfiguration().foregroundPrimary))
+                .width(new Absolute(0.75))
+                .height(new Relative(0.4)),
+                RegionLayout.Region.RIGHT)
             .getContainer();
 
         dockList.getLayout(ListLayout.class).add(container);
@@ -85,9 +109,13 @@ public class Molten {
         if (interactedWindow != null) {
             Container dockItem = this.windows.remove(interactedWindow);
             this.windows.put(interactedWindow, dockItem);
-            this.container.remove(interactedWindow.getContainer());
-            this.container.add(interactedWindow.getContainer());
+            this.setFocused(interactedWindow);
         }
+    }
+
+    public void setFocused(Window window) {
+        this.container.remove(window.getContainer());
+        this.container.add(window.getContainer());
     }
 
     public Window getInteractedWindow() {

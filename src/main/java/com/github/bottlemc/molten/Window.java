@@ -79,10 +79,9 @@ public class Window {
                         .width(new Relative(0.6, 0, true))
                         .height(new Relative(0.6))
                         .apply(container1 -> {
+                            container1.backgroundColor(new Absolute(configuration.foregroundPrimary));
                             if(icon != null) {
                                 container1.backgroundImage(icon);
-                            } else {
-                                container1.backgroundColor(new Absolute(configuration.foregroundPrimary));
                             }
                         })
                         .padding(Element.Direction.LEFT, new Absolute(3)),
