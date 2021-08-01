@@ -198,12 +198,13 @@ public class Window {
                 .width(new Relative(1, 5))
                 .height(new Absolute(5))
                 .onClick(container1 -> {
-                    if (molten.getInteractedWindow() == null) {
-                        setInitials();
-                        molten.getCurrentInteracts().add(Molten.InteractType.RESIZE_BOTTOM);
-                        molten.getCurrentInteracts().remove(Molten.InteractType.MOVE);
-                        molten.setInteractedWindow(this);
+                    setInitials();
+                    if (molten.getInteractedWindow() != this) {
+                        molten.getCurrentInteracts().clear();
                     }
+                    molten.getCurrentInteracts().add(Molten.InteractType.RESIZE_BOTTOM);
+                    molten.getCurrentInteracts().remove(Molten.InteractType.MOVE);
+                    molten.setInteractedWindow(this);
                 })
                 .onRelease(container1 -> {
                     molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_BOTTOM);
@@ -265,18 +266,22 @@ public class Window {
                 } else if(type == Molten.InteractType.RESIZE_LEFT) {
                     this.x = this.initialX + deltaRelativeMouseX / 2;
                     this.width = this.initialWidth - deltaRelativeMouseX;
+                    this.updatePosition();
                     this.updateSize();
                 } else if(type == Molten.InteractType.RESIZE_TOP) {
                     this.y = this.initialY + deltaRelativeMouseY / 2;
                     this.height = this.initialHeight - deltaRelativeMouseY;
+                    this.updatePosition();
                     this.updateSize();
                 } else if(type == Molten.InteractType.RESIZE_RIGHT) {
                     this.x = this.initialX + deltaRelativeMouseX / 2;
                     this.width = this.initialWidth + deltaRelativeMouseX;
+                    this.updatePosition();
                     this.updateSize();
                 } else if(type == Molten.InteractType.RESIZE_BOTTOM) {
                     this.y = this.initialY + deltaRelativeMouseY / 2;
                     this.height = this.initialHeight + deltaRelativeMouseY;
+                    this.updatePosition();
                     this.updateSize();
                 } else if(type == Molten.InteractType.MAXIMIZE) {
                     double cachedX = x;
