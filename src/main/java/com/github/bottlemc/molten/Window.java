@@ -17,14 +17,13 @@ import com.github.glassmc.sculpt.framework.layout.RegionLayout;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class Window {
 
     private final String icon;
 
-    private boolean maximized;
+    private boolean maximized, prevMaximized = true;
     private double x, y;
     private double width, height;
 
@@ -35,6 +34,10 @@ public class Window {
     private double initialMouseX, initialMouseY;
 
     private final Container container;
+    private final Container main;
+    private final Container header;
+
+    private boolean initialized = false;
 
     private final Molten molten = GlassLoader.getInstance().getAPI(Molten.class);
 
@@ -52,14 +55,11 @@ public class Window {
         this.container = new Container()
             .adjustElements(false)
             .getLayout(RegionLayout.class)
-            .add(new Container()
+            .add(main = new Container()
                 .backgroundColor(new Absolute(configuration.background))
-                .cornerRadius(new Absolute(2.5))
                 .getLayout(RegionLayout.class)
-                .add(new Container()
+                .add(header = new Container()
                     .height(new Absolute(10))
-                    .cornerRadius(new Pair<>(Element.Direction.LEFT, Element.Direction.TOP), new Absolute(2.5))
-                    .cornerRadius(new Pair<>(Element.Direction.TOP, Element.Direction.RIGHT), new Absolute(2.5))
                     .backgroundColor(new Absolute(configuration.elementBackground))
                     .onClick(container1 -> {
                         setInitials();
@@ -222,13 +222,13 @@ public class Window {
     }
 
     public void update() {
-        this.container
-            .x(new Relative(this.x))
-            .y(new Relative(this.y))
-            .width(new Relative(this.width))
-            .height(new Relative(this.height));
+        if (!initialized) {
+            this.updatePosition();
+            this.updateSize();
+            initialized = true;
+        }
 
-        if(molten.getCurrentInteracts().size() > 0 && molten.getInteractedWindow() == this) {
+        if (molten.getCurrentInteracts().size() > 0 && molten.getInteractedWindow() == this) {
             IBackend backend = GlassLoader.getInstance().getInterface(IBackend.class);
             Vector2D mouseLocation = backend.getMouseLocation();
             double deltaMouseX = mouseLocation.getFirst() - initialMouseX;
@@ -248,20 +248,32 @@ public class Window {
                         this.initialY = -0.5 + height / 2;
                         this.y = initialY;
                         maximized = false;
+
+                        NewPosition newPosition = new NewPosition(100, x, x, y, y, 1, width, 1, height);
+                        this.container
+                            .width(newPosition)
+                            .height(newPosition);
                     }
+                    this.updatePosition();
                 } else if(type == Molten.InteractType.RESIZE_LEFT) {
                     this.x = this.initialX + deltaRelativeMouseX / 2;
                     this.width = this.initialWidth - deltaRelativeMouseX;
+                    this.updateSize();
                 } else if(type == Molten.InteractType.RESIZE_TOP) {
                     this.y = this.initialY + deltaRelativeMouseY / 2;
                     this.height = this.initialHeight - deltaRelativeMouseY;
+                    this.updateSize();
                 } else if(type == Molten.InteractType.RESIZE_RIGHT) {
                     this.x = this.initialX + deltaRelativeMouseX / 2;
                     this.width = this.initialWidth + deltaRelativeMouseX;
+                    this.updateSize();
                 } else if(type == Molten.InteractType.RESIZE_BOTTOM) {
                     this.y = this.initialY + deltaRelativeMouseY / 2;
                     this.height = this.initialHeight + deltaRelativeMouseY;
+                    this.updateSize();
                 } else if(type == Molten.InteractType.MAXIMIZE) {
+                    double cachedX = x;
+                    double cachedY = y;
                     cachedWidth = width;
                     cachedHeight = height;
                     x = 0;
@@ -271,11 +283,42 @@ public class Window {
                     maximized = true;
 
                     molten.getCurrentInteracts().remove(Molten.InteractType.MAXIMIZE);
+
+                    NewPosition newPosition = new NewPosition(100, cachedX, x, cachedY, y, cachedWidth, 1, cachedHeight, 1);
+                    this.container
+                        .x(newPosition)
+                        .y(newPosition)
+                        .width(newPosition)
+                        .height(newPosition);
                 } else if(type == Molten.InteractType.CLOSE) {
                     this.close();
                 }
             }
         }
+
+        if(prevMaximized != maximized) {
+            if(maximized) {
+                main.cornerRadius(new Absolute(0));
+                header.cornerRadius(new Absolute(0));
+            } else {
+                main.cornerRadius(new Absolute(2.5));
+                header.cornerRadius(new Pair<>(Element.Direction.LEFT, Element.Direction.TOP), new Absolute(2.5));
+                header.cornerRadius(new Pair<>(Element.Direction.TOP, Element.Direction.RIGHT), new Absolute(2.5));
+            }
+            prevMaximized = maximized;
+        }
+    }
+
+    private void updatePosition() {
+        this.container
+            .x(new Relative(this.x))
+            .y(new Relative(this.y));
+    }
+
+    private void updateSize() {
+        this.container
+                .width(new Relative(this.width))
+                .height(new Relative(this.height));
     }
 
     public void close() {
