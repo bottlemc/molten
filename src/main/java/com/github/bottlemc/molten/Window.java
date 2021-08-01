@@ -73,8 +73,11 @@ public class Window {
                         molten.setInteractedWindow(this);
                     })
                     .onRelease(container1 -> {
-                        molten.getCurrentInteracts().remove(Molten.InteractType.MOVE);
-                        molten.setInteractedWindow(null);
+                        if (molten.getInteractedWindow() != null) {
+                            molten.getCurrentInteracts().remove(Molten.InteractType.MOVE);
+                            molten.setInteractedWindow(null);
+                            this.checkSnapWindow();
+                        }
                     })
                     .getLayout(RegionLayout.class)
                     .add(new Container()
@@ -122,7 +125,7 @@ public class Window {
                         .padding(Element.Direction.RIGHT, new Absolute(2))
                         .onClick(container1 -> {
                             molten.getCurrentInteracts().clear();
-                            molten.getCurrentInteracts().add(Molten.InteractType.MAXIMIZE);
+                            molten.getCurrentInteracts().add(Molten.InteractType.MAXIMIZE_TOP);
                         })
                         .getLayout(RegionLayout.class)
                         .add(new Container()
@@ -153,8 +156,10 @@ public class Window {
                     molten.setInteractedWindow(this);
                 })
                 .onRelease(container1 -> {
-                    molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_LEFT);
-                    molten.setInteractedWindow(null);
+                    if (molten.getInteractedWindow() == this && molten.getCurrentInteracts().contains(Molten.InteractType.RESIZE_LEFT)) {
+                        molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_LEFT);
+                        molten.setInteractedWindow(null);
+                    }
                 }),
                 RegionLayout.Region.CENTER)
             .add(new Container()
@@ -171,8 +176,10 @@ public class Window {
                     molten.setInteractedWindow(this);
                 })
                 .onRelease(container1 -> {
-                    molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_TOP);
-                    molten.setInteractedWindow(null);
+                    if (molten.getInteractedWindow() == this && molten.getCurrentInteracts().contains(Molten.InteractType.RESIZE_TOP)) {
+                        molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_TOP);
+                        molten.setInteractedWindow(null);
+                    }
                 }),
                 RegionLayout.Region.CENTER)
             .add(new Container()
@@ -189,8 +196,10 @@ public class Window {
                     molten.setInteractedWindow(this);
                 })
                 .onRelease(container1 -> {
-                    molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_RIGHT);
-                    molten.setInteractedWindow(null);
+                    if (molten.getInteractedWindow() == this && molten.getCurrentInteracts().contains(Molten.InteractType.RESIZE_RIGHT)) {
+                        molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_RIGHT);
+                        molten.setInteractedWindow(null);
+                    }
                 }),
                 RegionLayout.Region.CENTER)
             .add(new Container()
@@ -207,8 +216,10 @@ public class Window {
                     molten.setInteractedWindow(this);
                 })
                 .onRelease(container1 -> {
-                    molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_BOTTOM);
-                    molten.setInteractedWindow(null);
+                    if (molten.getInteractedWindow() == this && molten.getCurrentInteracts().contains(Molten.InteractType.RESIZE_BOTTOM)) {
+                        molten.getCurrentInteracts().remove(Molten.InteractType.RESIZE_BOTTOM);
+                        molten.setInteractedWindow(null);
+                    }
                 }),
                 RegionLayout.Region.CENTER)
         .getContainer();
@@ -243,15 +254,22 @@ public class Window {
             double deltaMouseY = mouseLocation.getSecond() - initialMouseY;
             double deltaRelativeMouseX = deltaMouseX / backend.getDimension().getFirst();
             double deltaRelativeMouseY = deltaMouseY / backend.getDimension().getSecond();
+            double relativeMouseX = mouseLocation.getFirst() / backend.getDimension().getFirst();
+            double relativeMouseY = mouseLocation.getSecond() / backend.getDimension().getSecond();
             for (Molten.InteractType type : new ArrayList<>(molten.getCurrentInteracts())) {
                 if(type == Molten.InteractType.MOVE) {
                     this.x = this.initialX + deltaRelativeMouseX;
                     this.y = this.initialY + deltaRelativeMouseY;
 
                     if (maximized && (deltaRelativeMouseX > 0 || deltaRelativeMouseY > 0)) {
+                        double absoluteWidth = width * backend.getDimension().getFirst();
+                        double absoluteX = (x + 0.5) * backend.getDimension().getFirst() - absoluteWidth / 2;
                         this.width = cachedWidth;
                         this.height = cachedHeight;
-                        this.initialX = (mouseLocation.getFirst() / backend.getDimension().getFirst() - width * (mouseLocation.getFirst() / backend.getDimension().getFirst())) - width / 2;
+                        double currentMouseRelativeX = mouseLocation.getFirst() / backend.getDimension().getFirst();
+                        double grabbedRelativeX = (mouseLocation.getFirst() - absoluteX) / absoluteWidth;
+
+                        this.initialX = currentMouseRelativeX - grabbedRelativeX * width - width / 2;
                         this.x = initialX;
                         this.initialY = -0.5 + height / 2;
                         this.y = initialY;
@@ -262,6 +280,7 @@ public class Window {
                             .width(newPosition)
                             .height(newPosition);
                     }
+
                     this.updatePosition();
                 } else if(type == Molten.InteractType.RESIZE_LEFT) {
                     this.x = this.initialX + deltaRelativeMouseX / 2;
@@ -283,7 +302,7 @@ public class Window {
                     this.height = this.initialHeight + deltaRelativeMouseY;
                     this.updatePosition();
                     this.updateSize();
-                } else if(type == Molten.InteractType.MAXIMIZE) {
+                } else if(type == Molten.InteractType.MAXIMIZE_TOP) {
                     double cachedX = x;
                     double cachedY = y;
                     cachedWidth = width;
@@ -294,7 +313,7 @@ public class Window {
                     height = 1;
                     maximized = true;
 
-                    molten.getCurrentInteracts().remove(Molten.InteractType.MAXIMIZE);
+                    molten.getCurrentInteracts().remove(Molten.InteractType.MAXIMIZE_TOP);
 
                     NewPosition newPosition = new NewPosition(100, cachedX, x, cachedY, y, cachedWidth, 1, cachedHeight, 1);
                     this.container
@@ -302,6 +321,44 @@ public class Window {
                         .y(newPosition)
                         .width(newPosition)
                         .height(newPosition);
+                } else if(type == Molten.InteractType.MAXIMIZE_LEFT) {
+                    double cachedX = x;
+                    double cachedY = y;
+                    cachedWidth = width;
+                    cachedHeight = height;
+                    x = -0.25;
+                    y = 0;
+                    width = 0.5;
+                    height = 1;
+                    maximized = true;
+
+                    molten.getCurrentInteracts().remove(Molten.InteractType.MAXIMIZE_LEFT);
+
+                    NewPosition newPosition = new NewPosition(100, cachedX, x, cachedY, y, cachedWidth, 0.5, cachedHeight, 1);
+                    this.container
+                            .x(newPosition)
+                            .y(newPosition)
+                            .width(newPosition)
+                            .height(newPosition);
+                } else if(type == Molten.InteractType.MAXIMIZE_RIGHT) {
+                    double cachedX = x;
+                    double cachedY = y;
+                    cachedWidth = width;
+                    cachedHeight = height;
+                    x = 0.25;
+                    y = 0;
+                    width = 0.5;
+                    height = 1;
+                    maximized = true;
+
+                    molten.getCurrentInteracts().remove(Molten.InteractType.MAXIMIZE_RIGHT);
+
+                    NewPosition newPosition = new NewPosition(100, cachedX, x, cachedY, y, cachedWidth, 0.5, cachedHeight, 1);
+                    this.container
+                            .x(newPosition)
+                            .y(newPosition)
+                            .width(newPosition)
+                            .height(newPosition);
                 } else if(type == Molten.InteractType.CLOSE) {
                     NewPosition newPosition = new NewPosition(100, x, x, y, y, width, 0, height, 0);
                     this.container
@@ -331,6 +388,29 @@ public class Window {
                 header.cornerRadius(new Pair<>(Element.Direction.TOP, Element.Direction.RIGHT), new Absolute(2.5));
             }
             prevMaximized = maximized;
+        }
+    }
+
+    private void checkSnapWindow() {
+        IBackend backend = GlassLoader.getInstance().getInterface(IBackend.class);
+        Vector2D mouseLocation = backend.getMouseLocation();
+        double deltaMouseX = mouseLocation.getFirst() - initialMouseX;
+        double deltaMouseY = mouseLocation.getSecond() - initialMouseY;
+        double relativeMouseX = mouseLocation.getFirst() / backend.getDimension().getFirst();
+        double relativeMouseY = mouseLocation.getSecond() / backend.getDimension().getSecond();
+
+        if (relativeMouseX > 0.95) {
+            molten.getCurrentInteracts().clear();
+            molten.getCurrentInteracts().add(Molten.InteractType.MAXIMIZE_RIGHT);
+            molten.setInteractedWindow(this);
+        } else if (relativeMouseX < 0.05) {
+            molten.getCurrentInteracts().clear();
+            molten.getCurrentInteracts().add(Molten.InteractType.MAXIMIZE_LEFT);
+            molten.setInteractedWindow(this);
+        } else if (relativeMouseY < 0.05) {
+            molten.getCurrentInteracts().clear();
+            molten.getCurrentInteracts().add(Molten.InteractType.MAXIMIZE_TOP);
+            molten.setInteractedWindow(this);
         }
     }
 
