@@ -23,6 +23,9 @@ public class Window {
 
     private final String icon;
 
+    private boolean closing;
+    private long closeStartTime;
+
     private boolean maximized, prevMaximized = true;
     private double x, y;
     private double width, height;
@@ -223,8 +226,12 @@ public class Window {
 
     public void update() {
         if (!initialized) {
-            this.updatePosition();
-            this.updateSize();
+            NewPosition newPosition = new NewPosition(100, x, x, y, y, 0, width, 0, height);
+            this.container
+                .x(newPosition)
+                .y(newPosition)
+                .width(newPosition)
+                .height(newPosition);
             initialized = true;
         }
 
@@ -291,8 +298,21 @@ public class Window {
                         .width(newPosition)
                         .height(newPosition);
                 } else if(type == Molten.InteractType.CLOSE) {
-                    this.close();
+                    NewPosition newPosition = new NewPosition(100, x, x, y, y, width, 0, height, 0);
+                    this.container
+                            .x(newPosition)
+                            .y(newPosition)
+                            .width(newPosition)
+                            .height(newPosition);
+                    closing = true;
+                    closeStartTime = System.currentTimeMillis();
                 }
+            }
+        }
+
+        if (closing) {
+            if(System.currentTimeMillis() - closeStartTime > 100) {
+                this.close();
             }
         }
 
