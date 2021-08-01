@@ -5,6 +5,8 @@ import com.github.glassmc.sculpt.framework.Color;
 import com.github.glassmc.sculpt.framework.Vector2D;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
+import org.lwjgl.input.Cursor;
+import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.util.List;
