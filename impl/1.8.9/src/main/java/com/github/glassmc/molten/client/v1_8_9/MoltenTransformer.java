@@ -13,20 +13,43 @@ import org.objectweb.asm.tree.MethodNode;
 public class MoltenTransformer implements ITransformer {
 
     private final Identifier GAME_RENDERER = Identifier.parse("net/minecraft/client/render/GameRenderer");
-    private final Identifier RENDER = Identifier.parse("net/minecraft/client/render/GameRenderer#render(FJ)V");
+
+    private final Identifier MINECRAFT_CLIENT = Identifier.parse("net/minecraft/client/MinecraftClient");
 
     @Override
     public byte[] transform(String name, byte[] data) {
-        if(name.equals(GAME_RENDERER.getClassName())) {
+        if (name.equals(GAME_RENDERER.getClassName())) {
             ClassNode classNode = new ClassNode();
             ClassReader classReader = new ClassReader(data);
             classReader.accept(classNode, 0);
 
+            Identifier render = Identifier.parse("net/minecraft/client/render/GameRenderer#render(FJ)V");
+
             for(MethodNode methodNode : classNode.methods) {
-                if(methodNode.name.equals(RENDER.getMethodName()) && methodNode.desc.equals(RENDER.getMethodDesc())) {
+                if(methodNode.name.equals(render.getMethodName()) && methodNode.desc.equals(render.getMethodDesc())) {
                     for(AbstractInsnNode node : methodNode.instructions.toArray()) {
                         if(node.getOpcode() == Opcodes.RETURN) {
                             methodNode.instructions.insertBefore(node, new MethodInsnNode(Opcodes.INVOKESTATIC, MoltenHook.class.getName().replace(".", "/"), "onRender", "()V"));
+                        }
+                    }
+                }
+            }
+
+            ClassWriter classWriter = new ClassWriter(0);
+            classNode.accept(classWriter);
+            return classWriter.toByteArray();
+        } else if (name.equals(MINECRAFT_CLIENT.getClassName())) {
+            ClassNode classNode = new ClassNode();
+            ClassReader classReader = new ClassReader(data);
+            classReader.accept(classNode, 0);
+
+            Identifier handleKeyInput = Identifier.parse("net/minecraft/client/MinecraftClient#handleKeyInput()V");
+
+            for(MethodNode methodNode : classNode.methods) {
+                if(methodNode.name.equals(handleKeyInput.getMethodName()) && methodNode.desc.equals(handleKeyInput.getMethodDesc())) {
+                    for(AbstractInsnNode node : methodNode.instructions.toArray()) {
+                        if(node.getOpcode() == Opcodes.RETURN) {
+                            methodNode.instructions.insertBefore(node, new MethodInsnNode(Opcodes.INVOKESTATIC, MoltenHook.class.getName().replace(".", "/"), "onKeyPress", "()V"));
                         }
                     }
                 }

@@ -4,9 +4,9 @@ import com.github.bottlemc.molten.IScreenInterface;
 import com.github.glassmc.sculpt.framework.Color;
 import com.github.glassmc.sculpt.framework.Vector2D;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.util.Window;
-import org.lwjgl.input.Cursor;
-import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.util.List;
@@ -14,35 +14,23 @@ import java.util.List;
 public class ScreenInterface implements IScreenInterface {
 
     @Override
-    public double getWidth() {
-        Window window = new Window(MinecraftClient.getInstance());
-        return window.getScaledWidth();
+    public void setCurrentScreenDummy() {
+        //System.out.println(DummyScreen.class.getClassLoader());
+        //System.out.println(this.getClass().getClassLoader() + " " + MinecraftClient.class.getClassLoader());
+        MinecraftClient.getInstance().openScreen(new DummyScreen());
+
+        //MinecraftClient.getInstance().closeScreen();
+        //MinecraftClient.getInstance().openScreen(new TitleScreen());
     }
 
     @Override
-    public double getHeight() {
-        Window window = new Window(MinecraftClient.getInstance());
-        return window.getScaledHeight();
+    public Object getCurrentScreen() {
+        return MinecraftClient.getInstance().currentScreen;
     }
 
     @Override
-    public void drawRectangle(double x, double y, double width, double height, double cornerRadius, Color color) {
-
-    }
-
-    @Override
-    public void drawText(Font font, String text, double x, double y, Color color) {
-
-    }
-
-    @Override
-    public Vector2D getMousePosition() {
-        return null;
-    }
-
-    @Override
-    public List<Vector2D> getMouseClicks() {
-        return null;
+    public void setCurrentScreen(Object screen) {
+        MinecraftClient.getInstance().openScreen((Screen) screen);
     }
 
 }

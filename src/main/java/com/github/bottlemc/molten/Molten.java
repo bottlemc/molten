@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 public class Molten {
 
     private final Flame flame = GlassLoader.getInstance().getAPI(Flame.class);
+    private final IScreenInterface screenInterface = GlassLoader.getInstance().getInterface(IScreenInterface.class);
 
     private final Renderer renderer = new Renderer(GlassLoader.getInstance().getAPI(Sculpt.class).getBackend());
     private final Container dockList;
@@ -36,6 +37,9 @@ public class Molten {
                 .getContainer(),
                 RegionLayout.Region.LEFT)
             .getContainer();
+
+    private boolean showing;
+    private Object previousScreen;
 
     private final Map<Window, Container> windows = new HashMap<>();
 
@@ -98,10 +102,12 @@ public class Molten {
     }
 
     public void render() {
-        for(Window window : new HashSet<>(windows.keySet())) {
-            window.update();
+        if (this.showing) {
+            for (Window window : new HashSet<>(windows.keySet())) {
+                window.update();
+            }
+            this.renderer.render(container);
         }
-        this.renderer.render(container);
     }
 
     public void setInteractedWindow(Window interactedWindow) {
@@ -124,6 +130,17 @@ public class Molten {
 
     public List<InteractType> getCurrentInteracts() {
         return currentInteracts;
+    }
+
+    public void setShowing(boolean showing) {
+        this.showing = showing;
+
+        if (showing) {
+            previousScreen = screenInterface.getCurrentScreen();
+            screenInterface.setCurrentScreenDummy();
+        } else {
+            screenInterface.setCurrentScreen(previousScreen);
+        }
     }
 
     public enum InteractType {
