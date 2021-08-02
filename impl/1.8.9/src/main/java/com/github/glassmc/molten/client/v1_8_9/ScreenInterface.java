@@ -15,12 +15,7 @@ public class ScreenInterface implements IScreenInterface {
 
     @Override
     public void setCurrentScreenDummy() {
-        //System.out.println(DummyScreen.class.getClassLoader());
-        //System.out.println(this.getClass().getClassLoader() + " " + MinecraftClient.class.getClassLoader());
         MinecraftClient.getInstance().openScreen(new DummyScreen());
-
-        //MinecraftClient.getInstance().closeScreen();
-        //MinecraftClient.getInstance().openScreen(new TitleScreen());
     }
 
     @Override

@@ -9,7 +9,6 @@ public class MoltenInitializeListener implements Listener {
 
     @Override
     public void run() {
-        System.out.println(GlassLoader.getInstance().getInterface(IBackend.class));
         GlassLoader.getInstance().registerInterface(IScreenInterface.class, new ScreenInterface());
         GlassLoader.getInstance().registerTransformer(MoltenTransformer.class);
     }
