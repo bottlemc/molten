@@ -85,14 +85,14 @@ public class NewPosition extends Constraint {
         }
 
         @Override
-        public double getXValue(List<Element.Constructor<?>> appliedElements) {
+        public double getXValue(Renderer renderer, List<Element.Constructor<?>> appliedElements) {
             double percent = this.update();
             NewPosition newPosition = this.getComponent();
             return ((newPosition.getFinalX() - newPosition.getInitialX()) * percent + newPosition.getInitialX()) * this.getComponent().getElement().getParent().getConstructor().getWidth();
         }
 
         @Override
-        public double getYValue(List<Element.Constructor<?>> appliedElements) {
+        public double getYValue(Renderer renderer, List<Element.Constructor<?>> appliedElements) {
             double percent = this.update();
             NewPosition newPosition = this.getComponent();
             return ((newPosition.getFinalY() - newPosition.getInitialY()) * percent + newPosition.getInitialY()) * this.getComponent().getElement().getParent().getConstructor().getHeight();

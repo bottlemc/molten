@@ -94,6 +94,7 @@ public class Window {
                         RegionLayout.Region.CENTER)
                     .add(new Text()
                         .x(new Side(Side.Direction.NEGATIVE))
+                        .y(new Side(Side.Direction.ZERO))
                         .size(new Relative(0.425, 0, true))
                         .text(title)
                         .font(raleway)
