@@ -8,7 +8,7 @@ public class MoltenInitializeListener implements Listener {
     @Override
     public void run() {
         GlassLoader.getInstance().registerAPI(new Molten());
-        GlassLoader.getInstance().getAPI(Molten.class).addPinnedItem("test", null, TestWindow::new);
+        //GlassLoader.getInstance().getAPI(Molten.class).addPinnedItem("test", null, TestWindow::new);
     }
 
 }
